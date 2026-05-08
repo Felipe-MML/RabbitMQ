@@ -1,0 +1,17 @@
+<configuration>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{30}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Reduz verbosidade do cliente RabbitMQ para não poluir o console -->
+    <logger name="com.rabbitmq" level="WARN"/>
+
+    <!-- Nível padrão da aplicação: INFO -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>
