@@ -1,4 +1,4 @@
-# 💰 Saque Mensageria — Fluxo Bancário Assíncrono com RabbitMQ
+# Saque Mensageria — Fluxo Bancário Assíncrono com RabbitMQ
 
 Aplicação Java puro (sem Spring Boot) que simula um fluxo bancário assíncrono de **saque em conta corrente** integrado ao **RabbitMQ**.
 
