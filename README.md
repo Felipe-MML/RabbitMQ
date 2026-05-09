@@ -62,21 +62,6 @@ src/main/java/br/com/bancosaque/
 
 ---
 
-## Tecnologias
-
-| Tecnologia         | Versão  | Uso                               |
-|--------------------|---------|-----------------------------------|
-| Java               | 17+     | Linguagem principal               |
-| Maven              | 3.8+    | Gerenciamento de dependências     |
-| RabbitMQ Client    | 5.20.0  | Comunicação AMQP com o broker     |
-| Gson               | 2.10.1  | Serialização/desserialização JSON |
-| Lombok             | 1.18.30 | Redução de boilerplate (opcional) |
-| SLF4J + Logback    | 2.0.9   | Logging estruturado               |
-| RabbitMQ           | 3-mgmt  | Broker de mensagens               |
-| Docker             | —       | Execução do RabbitMQ              |
-
----
-
 ## 1. Subindo o RabbitMQ com Docker
 
 Execute o comando abaixo para iniciar o RabbitMQ com a interface de gerenciamento:
