@@ -1,50 +1,58 @@
 package br.com.bancosaque;
 
-import br.com.bancosaque.exception.MensageriaException;
-import br.com.bancosaque.messaging.SaqueConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import br.com.bancosaque.model.EventoSaque;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DeliverCallback;
 
 public class ConsumerMain {
 
-    private static final Logger log = LoggerFactory.getLogger(ConsumerMain.class);
+    private final static String QUEUE_NAME = "fila_saques";
+    private final static String HOST = "localhost";
+    private final static ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String[] args) {
-        exibirBanner();
+        System.out.println("=== TERMINAL DE NOTIFICAÇÕES (SUBSCRIBER) ===");
+        System.out.println("Aguardando mensagens... (Pressione CTRL+C para sair)");
 
-        SaqueConsumer consumer = null;
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(HOST);
 
         try {
-            consumer = new SaqueConsumer();
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
 
-            final SaqueConsumer consumerFinal = consumer;
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                log.info("[ConsumerMain] Sinal de desligamento recebido. Encerrando consumer...");
-                consumerFinal.close();
-                System.out.println("\nConsumer encerrado. Até logo!");
-            }));
+            channel.queueDeclare(QUEUE_NAME, true, false, false, null);
 
-            consumer.iniciarConsumo();
-            Thread.currentThread().join();
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String json = new String(delivery.getBody(), "UTF-8");
+                try {
+                    EventoSaque evento = mapper.readValue(json, EventoSaque.class);
+                    processarNotificacao(evento);
+                } catch (Exception e) {
+                    System.err.println("Erro ao processar mensagem: " + e.getMessage());
+                }
+            };
 
-        } catch (MensageriaException e) {
-            log.error("[ConsumerMain] Falha ao conectar ao RabbitMQ: {}", e.getMessage());
-            System.out.println("\nNão foi possível conectar ao RabbitMQ.");
-            System.out.println("Verifique se o Docker está em execução:");
-            System.out.println("docker run -d --hostname rabbit-host --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management");
+            channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
 
-        } catch (InterruptedException e) {
-            log.info("[ConsumerMain] Thread principal interrompida. Encerrando...");
-            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            System.err.println("Erro no Subscriber: " + e.getMessage());
         }
     }
 
-    private static void exibirBanner() {
-        System.out.println();
-        System.out.println("─".repeat(60));
-        System.out.println("       CONSUMER DE SAQUE - BANCO JAVA MSG                ");
-        System.out.println("     Aguardando eventos na fila RabbitMQ...                  ");
-        System.out.println("─".repeat(60));
-        System.out.println();
+    private static void processarNotificacao(EventoSaque evento) {
+        System.out.println("\n--------------------------------------------------");
+        System.out.println("📧 NOVO E-MAIL ENVIADO");
+        System.out.println("Para: " + evento.getEmail());
+        System.out.println("Assunto: Saque Confirmado - Conta " + evento.getNumeroConta());
+        System.out.println("--------------------------------------------------");
+        System.out.println("Prezado(a) " + evento.getTitular() + ",");
+        System.out.println("Confirmamos um saque de R$ " + evento.getValorSaque());
+        System.out.println("Data: " + evento.getDataHora());
+        System.out.println("Saldo Disponível: R$ " + evento.getSaldoRestante());
+        System.out.println("--------------------------------------------------\n");
     }
 }

@@ -112,7 +112,7 @@ Isso gera dois fat JARs na pasta `target/`:
 
 ---
 
-## 📨 3. Executando o Consumer
+## 3. Executando o Consumer
 
 **Abra um terminal** e execute o Consumer *antes* do Publisher:
 
